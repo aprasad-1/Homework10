@@ -1,0 +1,108 @@
+---
+title: "Homework10"
+output: html_document
+date: "2024-04-25"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(mosaic)
+library(moderndive)
+library(dplyr)
+library(ggplot2)
+library(effectsize)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r, echo = False}
+redlining = read.csv('redlining.csv')
+model <- lm(policies ~ minority + fire + age + income, data = redlining)
+
+get_regression_table(model, conf.level = 0.95, digits=3)
+
+```
+
+Question: Is there an association between the number of FAIR policies and the racial/ethic composition of a ZIP code adjusting for the fire, age, andincome variables?
+
+Approach: In order to answer this question, I used the linear model function to buid a regression model and then found the coefficients of the model and the confidence intervals for it as well.
+
+Results: The estimated coefficient between the number of FAIR policies and minority groups is 0.08. The p-value is 0.006 and the 95% confidence interval is (0.003,0.014)
+
+Conculsion: We are 95% confident that and additional 1% of minorities increases new fair programs by 0.08 per 100 housing units in that zip code since 0.008 is in our confidence interval. Additionally, we can conclude that no partial relationship between new policies and minorities is highly unlikely due to the p-value being 0.006, making it statistically significant.
+
+```{r, echo = False}
+groceries = read.csv('groceries.csv')
+
+price_store = groceries %>%
+  group_by(Store) %>%
+  summarize(average_price = mean(Price))
+
+ggplot(price_store) + 
+  geom_bar(aes(x = average_price, y = factor(Store)), stat = 'identity') +
+  labs(title = "Average Price of Groceries across Different Stores", x = "Average Price", y = "Store")
+  
+
+
+```
+
+The bar graph shows the average price of groceries across different grocery stores.
+
+```{r}
+
+product_count = groceries %>% 
+  group_by(Product) %>%
+  summarize(num_stores = n_distinct(Store))
+
+ggplot(product_count) + 
+  geom_bar(aes(x = num_stores, y = Product), stat = 'identity') +
+  labs(title = "Number of Stores that Sell each Product", x = "Number of Stores", y = "Product")
+
+
+
+```
+
+This bar graph shows the number of stores that sell each product.
+
+```{r, echo = False}
+lm_grocery = lm(Price ~ Product + Type, data = groceries)
+
+get_regression_table(lm_grocery)
+```
+
+Compared with ordinary grocery stores (like Albertsons, HEB, or Krogers), convenience stores charge somewhere between
+$0.41 and $0.92 dollars more for the same product.
+
+```{r, echo = FALSE}
+
+lm_price_product_store = lm(Price ~ Product + Store, data = groceries)
+
+get_regression_table(lm_price_product_store)
+
+
+```
+The stores that seems to charge to lowest prices when comparing the same product are Kroger and Walmart The stores that seem to charge the highest prices when comparing the same product are Wheatsville Food Co-Op and Whole Foods.
+
+
+The estimated coefficent of Central market is -0.573 and the estimated coefficient of H-E-B is -0.646. The confindence interval for  Central Market is (-0.922, -0.225) and the confidence interval for H-E-B is (-0.945, -0.347), which are very similar. The difference between the coefficents and confidence intervals is not as significant compared to other grocery stores. This shows the reason Central Market charges more is because it sells different products.
+
+```{r}
+
+groceries = groceries %>%
+  mutate(Income10K = Income / 10000)
+
+lm_income = lm(Price ~ Product + Income10K, data = groceries)
+
+get_regression_table(lm_income)
+
+standardize_parameters(lm_income)
+
+
+```
+
+Because the coeffient of the Income10k is -0.014, poorer people pay more for the same product since the coefficient is negative. This is because as income increases each 1k dollars, the price of the product decreases by 0.014 dollars. A one-standard deviation increase in the income of a ZIP code seems to be associated with a -0.03 standard-deviation change in the price that consumers in that ZIP code expect to pay for the same product.
+
